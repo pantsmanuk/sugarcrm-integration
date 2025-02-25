@@ -1,13 +1,12 @@
 <?php
 
-/***
+/**
  * SugarCRM integration plugin
  */
 class SugarCRMPlugin extends MantisPlugin
 {
-    /***
+    /**
      * A method that populates the plugin information and minimum requirements.
-     * @return void
      */
     public function register(): void
     {
@@ -24,9 +23,8 @@ class SugarCRMPlugin extends MantisPlugin
         $this->url = 'https://www.mantisbt.org';
     }
 
-    /***
+    /**
      * Default plugin configuration.
-     * @return array
      */
     public function config(): array
     {
@@ -66,212 +64,220 @@ class SugarCRMPlugin extends MantisPlugin
         ];
     }
 
-    /***
+    /**
      * Get SugarCRM Case UUID using Case Number
      *
-     * @param int @p_event Whatever
-     * @param int $p_chained_param SugarCRM Case Number
-     *
+     * @param  int  $event  Whatever
+     * @param  int  $chainedParam  SugarCRM Case Number
      * @return string URL to the SugarCRM Case number
      */
-    public function getCaseUrl($p_event, $p_chained_param): string
+    public function getCaseUrl(int $event, int $chainedParam): string
     {
-        if ($p_chained_param != '' && $p_chained_param != '0000') {
-            return '<a href="'.plugin_config_get('case_url').self::getCaseUuid($p_chained_param).'">';
+        if ($chainedParam !== 0 && $chainedParam !== '0000') {
+            $caseUrl = plugin_config_get('case_url');
+            $caseUuid = self::getCaseUuid($chainedParam);
+
+            return "<a href=\"{$caseUrl}{$caseUuid}\">";
         }
 
         return '0000';
     }
 
-    /***
+    /**
      * Get SugarCRM Case UUID using Case Number
      *
-     * @param int $p_caseNumber SugarCRM Case number to retrieve UUID for
-     *
+     * @param  int|null  $caseNumber  SugarCRM Case number to retrieve UUID for
      * @return string UUID that equates to the SugarCRM Case number
+     *
+     * @throws Exception If database connection or query fails
      */
-    public function getCaseUuid($p_caseNumber = null): string
+    public function getCaseUuid(?int $caseNumber = null): string
     {
-        if ($p_caseNumber != null) {
-            $t_uuid = null;
+        if ($caseNumber !== null) {
+            try {
+                $pdo = new PDO(
+                    'mysql:host='.plugin_config_get('db_hostname').';dbname='.plugin_config_get('db_database'),
+                    plugin_config_get('db_username'),
+                    plugin_config_get('db_password')
+                );
+                $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-            $t_errorLevel = error_reporting(0);
-            $t_mysqli = new mysqli(plugin_config_get('db_hostname'), plugin_config_get('db_username'), plugin_config_get('db_password'), plugin_config_get('db_database'));
-            error_reporting($t_errorLevel);
+                $stmt = $pdo->prepare('SELECT id FROM cases WHERE case_number = :case_number');
+                $stmt->execute(['case_number' => $caseNumber]);
+                $uuid = $stmt->fetchColumn();
 
-            if ($t_mysqli->connect_error) {
-                exit('Connect Error ('.$t_mysqli->connect_errno.') '.$t_mysqli->connect_error);
+                return $uuid ?: '';
+            } catch (PDOException $e) {
+                throw new Exception('Database error: '.$e->getMessage());
             }
-
-            if ($t_statement = $t_mysqli->prepare('SELECT id FROM cases WHERE case_number=?')) {
-                $t_statement->bind_param('s', $p_caseNumber);
-                $t_statement->execute();
-                $t_statement->bind_result($t_uuid);
-                $t_statement->fetch();
-                $t_statement->close();
-            }
-
-            $t_mysqli->close();
-
-            return $t_uuid;
         }
 
         return '';
     }
 
-    /***
+    /**
      * Update SugarCRM Case field/value
      *
-     * @param array $p_params Case number, field to be updated and value to apply
+     * @param  array  $params  Case number, field to be updated, and value to apply
+     * @return bool Success/Failure
      *
-     * @return bool  Success/Failure
+     * @throws Exception If database connection or query fails
      */
-    public function updateCase($p_event, $p_params): bool
+    public function updateCase($event, $params): bool
     {
-        $t_caseNumber = $p_params[0];
-        $t_field = $p_params[1];
-        $t_value = $p_params[2];
+        $caseNumber = $params[0];
+        $field = $params[1];
+        $value = $params[2];
 
-        if ($t_caseNumber != null) {
-            $t_errorLevel = error_reporting(0);
-            $t_mysqli = new mysqli(plugin_config_get('db_hostname'), plugin_config_get('db_username'), plugin_config_get('db_password'), plugin_config_get('db_database'));
-            error_reporting($t_errorLevel);
+        if ($caseNumber !== null) {
+            try {
+                $pdo = new PDO(
+                    'mysql:host='.plugin_config_get('db_hostname').';dbname='.plugin_config_get('db_database'),
+                    plugin_config_get('db_username'),
+                    plugin_config_get('db_password')
+                );
+                $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-            if ($t_mysqli->connect_errno) {
-                exit('Connect error ('.$t_mysqli->connect_errno.') '.$t_mysqli->connect_error);
-            }
+                $query = "UPDATE `cases` SET `$field` = :value WHERE `case_number` = :case_number";
+                $stmt = $pdo->prepare($query);
+                $stmt->execute(['value' => $value, 'case_number' => $caseNumber]);
 
-            $t_statement = $t_mysqli->prepare("UPDATE `cases` SET `$t_field`=? WHERE `case_number`=?");
-            $t_statement->bind_param('si', $t_value, $t_caseNumber);
-            $t_statement->execute();
-            if ($t_statement->errno == 0) {
                 return true;
+            } catch (PDOException $e) {
+                throw new Exception('Database error: '.$e->getMessage());
             }
-            $t_statement->close();
-            $t_mysqli->close();
         }
 
         return false;
     }
 
-    /***
+    /**
      * Update SugarCRM case_cstm field/value
      *
-     * @param array $p_params Case number, custom field to be updated and value to apply
+     * @param  array  $params  Case number, custom field to be updated, and value to apply
+     * @return bool Success/Failure
      *
-     * @return bool  Success/Failure
+     * @throws Exception If database connection or query fails
      */
-    public function updateCaseCstm($p_event, $p_params): bool
+    public function updateCaseCstm($event, $params): bool
     {
-        $t_caseNumber = $p_params[0];
-        $t_field = $p_params[1];
-        $t_value = $p_params[2];
+        $caseNumber = $params[0];
+        $field = $params[1];
+        $value = $params[2];
 
-        if ($t_caseNumber != null) {
-            $t_id = self::getCaseUuid($t_caseNumber);
-            if ($t_id != null) {
-                $t_errorLevel = error_reporting(0);
-                $t_mysqli = new mysqli(plugin_config_get('db_hostname'), plugin_config_get('db_username'), plugin_config_get('db_password'), plugin_config_get('db_database'));
-                error_reporting($t_errorLevel);
+        if ($caseNumber !== null) {
+            $id = self::getCaseUuid($caseNumber);
+            if ($id !== null) {
+                try {
+                    $pdo = new PDO(
+                        'mysql:host='.plugin_config_get('db_hostname').';dbname='.plugin_config_get('db_database'),
+                        plugin_config_get('db_username'),
+                        plugin_config_get('db_password')
+                    );
+                    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-                if ($t_mysqli->connect_errno) {
-                    exit('Connect error ('.$t_mysqli->connect_errno.') '.$t_mysqli->connect_error);
-                }
+                    $query = "UPDATE `cases_cstm` SET `$field` = :value WHERE `id_c` = :id";
+                    $stmt = $pdo->prepare($query);
+                    $stmt->execute(['value' => $value, 'id' => $id]);
 
-                $t_statement = $t_mysqli->prepare("UPDATE `cases_cstm` SET `$t_field`=? WHERE `id_c`=?");
-                $t_statement->bind_param('ss', $t_value, $t_id);
-                $t_statement->execute();
-                if ($t_statement->errno == 0) {
                     return true;
+                } catch (PDOException $e) {
+                    throw new Exception('Database error: '.$e->getMessage());
                 }
-                $t_statement->close();
-                $t_mysqli->close();
             }
         }
 
         return false;
     }
 
-    /***
+    /**
      * Add SugarCRM commentlog field/value
      *
-     * @param array $p_params Case number, field to be updated and value to apply
-     *
+     * @param  array  $params  Case number, field to be updated, and value to apply
      * @return bool Success/Failure
+     *
+     * @throws Exception If database connection or query fails
      */
-    public function updateCommentlog($p_event, $p_params): bool
+    public function updateCommentlog($event, $params): bool
     {
-        $t_caseNumber = $p_params[0];
-        $t_field = $p_params[1];
-        $t_value = $p_params[2];
-        $t_user_uuid = plugin_config_get('user_uuid');
-        $t_commentlog_uuid = self::get_uuid_nc('commentlog');
+        $caseNumber = $params[0];
+        $field = $params[1];
+        $value = $params[2];
+        $userUuid = plugin_config_get('user_uuid');
+        $commentlogUuid = self::get_uuid_nc('commentlog');
 
-        if ($t_caseNumber != null) {
-            $t_errorLevel = error_reporting(0);
-            $t_mysqli = new mysqli(plugin_config_get('db_hostname'), plugin_config_get('db_username'), plugin_config_get('db_password'), plugin_config_get('db_database'));
-            error_reporting($t_errorLevel);
+        if ($caseNumber !== null) {
+            try {
+                $pdo = new PDO(
+                    'mysql:host='.plugin_config_get('db_hostname').';dbname='.plugin_config_get('db_database'),
+                    plugin_config_get('db_username'),
+                    plugin_config_get('db_password')
+                );
+                $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-            if ($t_mysqli->connect_errno) {
-                exit('Connect error ('.$t_mysqli->connect_errno.') '.$t_mysqli->connect_error);
+                $datetime = date('Y-m-d H:i:s');
+
+                $query = 'INSERT INTO `commentlog` (`id`, `date_entered`, `date_modified`, `modified_user_id`, `created_by`, `deleted`, `entry`) 
+                      VALUES (:id, :date_entered, :date_modified, :modified_user_id, :created_by, 0, :entry)';
+                $stmt = $pdo->prepare($query);
+                $stmt->execute([
+                    'id' => $commentlogUuid,
+                    'date_entered' => $datetime,
+                    'date_modified' => $datetime,
+                    'modified_user_id' => $userUuid,
+                    'created_by' => $userUuid,
+                    'entry' => "Reported In Revision: $field".PHP_EOL."Tested In Revision: $value",
+                ]);
+
+                $caseUuid = self::getCaseUuid($caseNumber);
+                $commentlogRelUuid = self::get_uuid_nc('commentlog_rel');
+                $relQuery = "INSERT INTO `commentlog_rel` (`id`, `record_id`, `commentlog_id`, `module`, `deleted`) 
+                         VALUES (:id, :record_id, :commentlog_id, 'Cases', 0)";
+                $relStmt = $pdo->prepare($relQuery);
+                $relStmt->execute([
+                    'id' => $commentlogRelUuid,
+                    'record_id' => $caseUuid,
+                    'commentlog_id' => $commentlogUuid,
+                ]);
+
+                return true;
+            } catch (PDOException $e) {
+                throw new Exception('Database error: '.$e->getMessage());
             }
-
-            $t_datetime = date('Y-m-d H:i:s');
-
-            $t_query = "INSERT INTO `commentlog` (`id`, `date_entered`, `date_modified`, `modified_user_id`, `created_by`, `deleted`, `entry`) VALUES ('$t_commentlog_uuid', '$t_datetime', '$t_datetime', '$t_user_uuid', '$t_user_uuid', 0, 'Reported In Revision: $t_field".PHP_EOL."Tested In Revision: $t_value')";
-            $t_statement = $t_mysqli->prepare($t_query);
-            $t_statement->execute();
-            if ($t_statement->errno == 0) {
-                $t_statement->close();
-
-                $t_case_uuid = self::getCaseUuid($t_caseNumber);
-                $t_commentlog_rel_uuid = self::get_uuid_nc('commentlog_rel');
-                $t_statement = $t_mysqli->prepare("INSERT INTO `commentlog_rel` (`id`, `record_id`, `commentlog_id`, `module`, `deleted`) VALUES (?, ?, ?, 'Cases', 0)");
-                $t_statement->bind_param('sss', $t_commentlog_rel_uuid, $t_case_uuid, $t_commentlog_uuid);
-                $t_statement->execute();
-                if ($t_statement->errno == 0) {
-                    return true;
-                }
-            }
-            $t_statement->close();
-            $t_mysqli->close();
         }
 
         return false;
     }
 
-    /***
+    /**
      * Make a new UUID without collision
      *
-     * @param string Database table to check for collision
-     *
+     * @param  string  $table  Database table to check for collision
      * @return string New UUID
+     *
+     * @throws Exception If database connection or query fails
      */
-    public static function get_uuid_nc($p_table): string
+    public static function get_uuid_nc($table): string
     {
-        $t_errorLevel = error_reporting(0);
-        $t_mysqli = new mysqli(plugin_config_get('db_hostname'), plugin_config_get('db_username'), plugin_config_get('db_password'), plugin_config_get('db_database'));
-        error_reporting($t_errorLevel);
+        try {
+            $pdo = new PDO(
+                'mysql:host='.plugin_config_get('db_hostname').';dbname='.plugin_config_get('db_database'),
+                plugin_config_get('db_username'),
+                plugin_config_get('db_password')
+            );
+            $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-        if ($t_mysqli->connect_errno) {
-            exit('Connect error ('.$t_mysqli->connect_errno.') '.$t_mysqli->connect_error);
+            do {
+                $uuid = self::v4();
+                $stmt = $pdo->prepare("SELECT COUNT(*) FROM $table WHERE id = :uuid");
+                $stmt->execute(['uuid' => $uuid]);
+                $count = $stmt->fetchColumn();
+            } while ($count > 0);
+
+            return $uuid;
+        } catch (PDOException $e) {
+            throw new Exception('Database error: '.$e->getMessage());
         }
-
-        $t_uuid = self::v4();
-        do {
-            if ($t_statement = $t_mysqli->prepare('SELECT `id` FROM ? WHERE `id` = ?')) {
-                $t_statement->bind_param('ss', $p_table, $t_uuid);
-                $t_statement->execute();
-                $t_statement->bind_result($t_result);
-                $t_statement->fetch();
-            }
-            if ($t_result == null) {
-                break;
-            }
-        } while (true);
-        $t_mysqli->close();
-
-        return $t_uuid;
     }
 
     /**
@@ -282,6 +288,8 @@ class SugarCRMPlugin extends MantisPlugin
      * using random numbers.
      *
      * @return string A randomly generated version 4 UUID.
+     *
+     * @throws \Random\RandomException
      */
     public static function v4(): string
     {
