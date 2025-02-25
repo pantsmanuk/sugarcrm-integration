@@ -49,8 +49,8 @@ $t_user_uuid = plugin_config_get('user_uuid');
                 <div class="widget-header widget-header-small">
                     <h4 class="widget-title lighter">
                         <?php echo sprintf('%s: %s',
-                        lang_get('plugin_SugarCRM_title'),
-                        lang_get('plugin_SugarCRM_config')
+                            lang_get('plugin_SugarCRM_title'),
+                            lang_get('plugin_SugarCRM_config')
                         ); ?>
                     </h4>
                 </div>
