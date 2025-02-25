@@ -1,0 +1,21 @@
+{
+    "name": "pantsmanuk/sugarcrm-integration",
+    "description": "(Very limited) SugarCRM integration for MantisBT v2.0",
+    "type": "mantisbt-plugin",
+    "require-dev": {
+        "laravel/pint": "^1.21"
+    },
+    "license": "BSD-3-Clause",
+    "autoload": {
+        "psr-4": {
+            "Murrayc\\SugarcrmIntegration\\": "SugarCRM/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Murray Crane",
+            "email": "murray.crane@ggpsystems.co.uk"
+        }
+    ],
+    "require": {}
+}
