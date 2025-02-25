@@ -9,7 +9,7 @@ class SugarCRMPlugin extends MantisPlugin
      * A method that populates the plugin information and minimum requirements.
      * @return void
      */
-    public function register()
+    public function register(): void
     {
         $this->name = plugin_lang_get('title');
         $this->description = plugin_lang_get('description');
@@ -28,7 +28,7 @@ class SugarCRMPlugin extends MantisPlugin
      * Default plugin configuration.
      * @return array
      */
-    public function config()
+    public function config(): array
     {
         return array(
             'db_hostname' => 'mysql.example.com',
@@ -43,7 +43,7 @@ class SugarCRMPlugin extends MantisPlugin
     /**
      * Register events for plugin.
      */
-    public function events()
+    public function events(): array
     {
         return array(
             'EVENT_SUGARCRM_CASE_URL' => EVENT_TYPE_OUTPUT,
@@ -56,7 +56,7 @@ class SugarCRMPlugin extends MantisPlugin
     /**
      * Register event hooks for plugin.
      */
-    public function hooks()
+    public function hooks(): array
     {
         return array(
             'EVENT_SUGARCRM_CASE_URL' => 'getCaseUrl',
@@ -74,11 +74,13 @@ class SugarCRMPlugin extends MantisPlugin
      *
      * @return string URL to the SugarCRM Case number
      */
-    public function getCaseUrl($p_event, $p_chained_param)
+    public function getCaseUrl($p_event, $p_chained_param): string
     {
-        if ($p_chained_param != null && $p_chained_param != "0000") {
+        if ($p_chained_param != '' && $p_chained_param != '0000') {
             return '<a href="' . plugin_config_get('case_url') . self::getCaseUuid($p_chained_param) . '">';
         }
+
+        return '0000';
     }
 
     /***
@@ -88,7 +90,7 @@ class SugarCRMPlugin extends MantisPlugin
      *
      * @return string UUID that equates to the SugarCRM Case number
      */
-    public function getCaseUuid($p_casenumber = null)
+    public function getCaseUuid($p_casenumber = null): string
     {
         if ($p_casenumber != null) {
             $t_uuid = null;
@@ -113,7 +115,7 @@ class SugarCRMPlugin extends MantisPlugin
             return $t_uuid;
         }
 
-        return null;
+        return '';
     }
 
     /***
@@ -123,7 +125,7 @@ class SugarCRMPlugin extends MantisPlugin
      *
      * @return bool  Success/Failure
      */
-    public function updateCase($p_event, $p_params)
+    public function updateCase($p_event, $p_params): bool
     {
         $t_rtrn = false;
         $t_casenumber = $p_params[0];
@@ -158,7 +160,7 @@ class SugarCRMPlugin extends MantisPlugin
      *
      * @return bool  Success/Failure
      */
-    public function updateCaseCstm($p_event, $p_params)
+    public function updateCaseCstm($p_event, $p_params): bool
     {
         $t_rtrn = false;
         $t_casenumber = $p_params[0];
@@ -197,7 +199,7 @@ class SugarCRMPlugin extends MantisPlugin
      *
      * @return bool Success/Failure
      */
-    public function updateCommentlog($p_event, $p_params)
+    public function updateCommentlog($p_event, $p_params): bool
     {
         $t_casenumber = $p_params[0];
         $t_field = $p_params[1];
@@ -244,7 +246,7 @@ class SugarCRMPlugin extends MantisPlugin
      *
      * @return string New UUID
      */
-    public static function get_uuid_nc($p_table)
+    public static function get_uuid_nc($p_table): string
     {
         $t_errlevel = error_reporting(0);
         $t_mysqli = new mysqli(plugin_config_get('db_hostname'), plugin_config_get('db_username'), plugin_config_get('db_password'), plugin_config_get('db_database'));
@@ -268,27 +270,35 @@ class SugarCRMPlugin extends MantisPlugin
         return $t_uuid;
     }
 
-    public static function v4()
+    /**
+     * Generate a version 4 UUID.
+     *
+     * This function generates a random UUID according to RFC 4122.
+     * A version 4 UUID is a universally unique identifier that is generated
+     * using random numbers.
+     *
+     * @return string A randomly generated version 4 UUID.
+     */
+    public static function v4(): string
     {
         return sprintf('%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
-
             // 32 bits for "time_low"
-            mt_rand(0, 0xffff), mt_rand(0, 0xffff),
+            random_int(0, 0xffff), random_int(0, 0xffff),
 
             // 16 bits for "time_mid"
-            mt_rand(0, 0xffff),
+            random_int(0, 0xffff),
 
             // 16 bits for "time_hi_and_version",
             // four most significant bits holds version number 4
-            mt_rand(0, 0x0fff) | 0x4000,
+            random_int(0, 0x0fff) | 0x4000,
 
             // 16 bits, 8 bits for "clk_seq_hi_res",
             // 8 bits for "clk_seq_low",
             // two most significant bits holds zero and one for variant DCE1.1
-            mt_rand(0, 0x3fff) | 0x8000,
+            random_int(0, 0x3fff) | 0x8000,
 
             // 48 bits for "node"
-            mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff)
+            random_int(0, 0xffff), random_int(0, 0xffff), random_int(0, 0xffff)
         );
     }
 }
