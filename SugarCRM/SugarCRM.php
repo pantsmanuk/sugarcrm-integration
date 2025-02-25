@@ -50,6 +50,7 @@ class SugarCRMPlugin extends MantisPlugin
 
     /**
      * Get SugarCRM Case UUID using Case Number
+     *
      * @TODO MBT custom field name, custom field default value and SugarCRM custom field name should come from config - MLC
      *
      * @param  int  $event  Whatever
