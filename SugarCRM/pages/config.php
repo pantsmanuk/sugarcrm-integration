@@ -17,10 +17,9 @@
 /**
  * Edit Core Formatting Configuration
  *
- * @copyright Copyright 2000 - 2002  Kenzaburo Ito - kenito@300baud.org
- * @copyright Copyright 2002  MantisBT Team - mantisbt-dev@lists.sourceforge.net
+ * @copyright Copyright 2025 GGP Systems Limited
  *
- * @link http://www.mantisbt.org
+ * @link https://www.mantisbt.org
  */
 auth_reauthenticate();
 access_ensure_global_level(config_get('manage_plugin_threshold'));
@@ -44,72 +43,94 @@ $t_user_uuid = plugin_config_get('user_uuid');
 
     <div class="form-container">
         <form id="SugarCRM-config-form" action="<?php echo plugin_page('config_edit') ?>" method="post">
-            <fieldset>
-                <legend><span><?php echo plugin_lang_get('title').': '.plugin_lang_get('config') ?></span></legend>
-                <?php echo form_security_field('plugin_SugarCRM_config_edit') ?>
+            <?php echo form_security_field('plugin_SugarCRM_config_edit') ?>
 
-                <div class="field-container">
-                    <label><span><?php echo plugin_lang_get('db_hostname') ?></label>
-                    <span class="small">
-					<input type="text" name="db_hostname" value="<?php echo string_attribute($t_db_hostname) ?>"/>
-				</span>
-                    <span class="label-style"></span>
+            <div class="widget-box widget-color-blue2">
+                <div class="widget-header widget-header-small">
+                    <h4 class="widget-title lighter">
+                        <?php echo sprintf('%s: %s',
+                        lang_get('plugin_SugarCRM_title'),
+                        lang_get('plugin_SugarCRM_config')
+                        ); ?>
+                    </h4>
                 </div>
+            </div>
 
-                <div class="field-container">
-                    <label><span><?php echo plugin_lang_get('db_username') ?></label>
-                    <span class="small">
-					<input type="text" name="db_username" value="<?php echo string_attribute($t_db_username) ?>"/>
-				</span>
-                    <span class="label-style"></span>
+            <div class="widget-body">
+                <div class="widget-main no-padding">
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-condensed table-striped">
+                            <tr>
+                                <th class="category">
+                                    <label for="db_hostname"><?php echo lang_get('plugin_SugarCRM_db_hostname'); ?></label>
+                                </th>
+                                <td>
+                                    <input id="db_hostname" name="db_hostname" type="text" class="input-sm" size="50" maxlength="500" value="<?php echo string_attribute(plugin_config_get('db_hostname')) ?>"/>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <th class="category">
+                                    <label for="db_username"><?php echo lang_get('plugin_SugarCRM_db_username'); ?></label>
+                                </th>
+                                <td>
+                                    <input id="db_username" name="db_username" type="text" class="input-sm" size="50" maxlength="500" value="<?php echo string_attribute(plugin_config_get('db_username')) ?>"/>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <th class="category">
+                                    <label for="db_password"><?php echo lang_get('plugin_SugarCRM_db_password'); ?></label>
+                                </th>
+                                <td>
+                                    <input id="db_password" name="db_password" type="text" class="input-sm" size="50" maxlength="500" value="<?php echo string_attribute(plugin_config_get('db_password')) ?>"/>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <th class="category">
+                                    <label for="db_database"><?php echo lang_get('plugin_SugarCRM_db_database'); ?></label>
+                                </th>
+                                <td>
+                                    <input id="db_database" name="db_database" type="text" class="input-sm" size="50" maxlength="500" value="<?php echo string_attribute(plugin_config_get('db_database')) ?>"/>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <th class="category">
+                                    <label for="case_url"><?php echo lang_get('plugin_SugarCRM_case_url'); ?></label>
+                                    <br/>
+                                    <span class="small">
+                                        <?php echo lang_get('plugin_SugarCRM_case_url_info'); ?>
+                                    </span>
+                                </th>
+                                <td>
+                                    <input id="case_url" name="case_url" type="text" class="input-sm" size="50" maxlength="500" value="<?php echo string_attribute(plugin_config_get('case_url')) ?>"/>
+                                </td>
+                            </tr>
+
+                            <div class="spacer">
+                            </div>
+
+                            <tr>
+                                <th class="category">
+                                    <label for="user_uuid"><?php echo lang_get('plugin_SugarCRM_user_uuid'); ?></label>
+                                    <br/>
+                                    <span class="small">
+                                        <?php echo lang_get('plugin_SugarCRM_user_uuid_info'); ?>
+                                    </span>
+                                </th>
+                                <td>
+                                    <input id="user_uuid" name="user_uuid" type="text" class="input-sm" size="50" maxlength="500" value="<?php echo string_attribute(plugin_config_get('user_uuid')) ?>"/>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
                 </div>
-
-                <div class="field-container">
-                    <label><span><?php echo plugin_lang_get('db_password') ?></label>
-                    <span class="small">
-					<input type="text" name="db_password" value="<?php echo string_attribute($t_db_password) ?>"/>
-				</span>
-                    <span class="label-style"></span>
+                <div class="widget-toolbox padding-8 clearfix">
+                    <input type="submit" class="btn btn-primary btn-white btn-round" value="<?php echo lang_get('change_configuration') ?>"/>
                 </div>
-
-                <div class="field-container">
-                    <label><span><?php echo plugin_lang_get('db_database') ?></label>
-                    <span class="small">
-					<input type="text" name="db_database" value="<?php echo string_attribute($t_db_database) ?>"/>
-				</span>
-                    <span class="label-style"></span>
-                </div>
-
-                <div class="spacer">
-                </div>
-
-                <div class="field-container">
-                    <label><span><?php echo plugin_lang_get('case_url') ?>
-                <br/><span class="small"><?php echo plugin_lang_get('case_url_info') ?></span>
-                    </label>
-                    <span class="small">
-					<input type="text" name="case_url" value="<?php echo string_attribute($t_case_url) ?>"/>
-				</span>
-                    <span class="label-style"></span>
-                </div>
-
-                <div class="spacer">
-                </div>
-
-                <div class="field-container">
-                    <label><span><?php echo plugin_lang_get('user_uuid') ?>
-                <br/><span class="small"><?php echo plugin_lang_get('user_uuid_info') ?></span>
-                    </label>
-                    <span class="small">
-					<input type="text" name="user_uuid" value="<?php echo string_attribute($t_user_uuid) ?>"/>
-				</span>
-                    <span class="label-style"></span>
-                </div>
-
-                <span class="submit-button">
-				<input type="submit" class="button" value="<?php echo lang_get('change_configuration') ?>"/>
-			</span>
-            </fieldset>
+            </div>
         </form>
     </div>
 </div>
