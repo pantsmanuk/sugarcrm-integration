@@ -1,4 +1,5 @@
 <?php
+
 form_security_validate('plugin_SugarCRM_config_update');
 
 $f_db_hostname = gpc_get_string('db_hostname');

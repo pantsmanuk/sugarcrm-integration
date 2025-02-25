@@ -17,7 +17,7 @@ $t_user_uuid = plugin_config_get('user_uuid');
     <div id="SugarCRM-config-div" class="form-container">
         <form id="SugarCRM-config-form" action="<?php echo plugin_page('config_edit') ?>" method="post">
             <fieldset>
-                <legend><span><?php echo plugin_lang_get('title') . ': ' . plugin_lang_get('config') ?></span></legend>
+                <legend><span><?php echo plugin_lang_get('title').': '.plugin_lang_get('config') ?></span></legend>
                 <?php echo form_security_field('plugin_SugarCRM_config_edit') ?>
 
                 <div class="field-container">
