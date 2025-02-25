@@ -1,0 +1,24 @@
+<?php
+/**
+ * Language File - English (English)
+ *
+ * @ingroup Language
+ * @file
+ * @copyright Copyright 2025 GGP Systems Limited
+ * @link https://www.mantisbt.org
+ *
+ * @author Murray Crane
+ */
+
+$s_plugin_SugarCRM_title         = 'SugarCRM Integration Plugin';
+$s_plugin_SugarCRM_description   = '(Very limited) integration between MantisBT and SugarCRM';
+
+$s_plugin_SugarCRM_config = 'Configuration';
+$s_plugin_SugarCRM_db_hostname = 'SugarCRM database hostname';
+$s_plugin_SugarCRM_db_username = 'SugarCRM database username';
+$s_plugin_SugarCRM_db_password = 'SugarCRM database password';
+$s_plugin_SugarCRM_db_database = 'SugarCRM database name';
+$s_plugin_SugarCRM_case_url = 'URL for SugarCRM Cases';
+$s_plugin_SugarCRM_case_url_info = 'The full URL for SugarCRM Cases, not including the Case UUID value.';
+$s_plugin_SugarCRM_user_uuid = 'SugarCRM admin user UUID';
+$s_plugin_SugarCRM_user_uuid_info = 'The full UUID of a SugarCRM admin user.';
