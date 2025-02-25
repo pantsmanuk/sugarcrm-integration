@@ -1,11 +1,11 @@
-vendor/
 *.swp
 *.bak
 ._*
 .DS_Store
 *.buildpath
 *.project
-.idea/
-.vs/
-.svn/
 *.DotSettings.user
+.idea/
+.svn/
+.vs/
+vendor/
