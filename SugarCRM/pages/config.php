@@ -11,6 +11,7 @@ $t_db_username = plugin_config_get('db_username');
 $t_db_password = plugin_config_get('db_password');
 $t_db_database = plugin_config_get('db_database');
 $t_case_url = plugin_config_get('case_url');
+$t_user_uuid = plugin_config_get('user_uuid');
 ?>
 
     <div id="SugarCRM-config-div" class="form-container">
